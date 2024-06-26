@@ -2,10 +2,14 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { User } from "../../types/user";
 import { save_user } from "../../reducer/users/userSlice";
 
+interface ErrorResponse {
+  error: string;
+}
+
 export const userApi = createApi({
   reducerPath: "userApi", // 不可與slice的name重複
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://jsonplaceholder.typicode.com/todos",
+    baseUrl: `${process.env.baseurl}/todos`,
   }),
   endpoints: (builder) => ({
     getUsers: builder.query<User[], void>({
@@ -18,6 +22,11 @@ export const userApi = createApi({
         } catch (error) {
           console.error("fetch users error", error);
         }
+      },
+      transformErrorResponse: (res): ErrorResponse => {
+        if (res.status === 404) return { error: "Resource Not Found" };
+        if (res.status === 500) return { error: "Internal Error" };
+        return { error: "Unknown error" };
       },
     }),
   }),
